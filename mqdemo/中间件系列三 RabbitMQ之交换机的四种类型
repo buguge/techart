@@ -1,0 +1,6 @@
+交换机主要包括如下4种类型(常用前3种)：
+
+Direct exchange（直连交换机）
+Fanout exchange（扇型交换机）
+Topic exchange（主题交换机）
+Headers exchange（头交换机）

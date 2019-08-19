@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %-5p [%t] (%F:%L) %r - %m%n"/>
+        </Console>
+        <!-- <File name="TEMP" fileName="${web:rootDir}/app.log"> -->
+		<!-- <File name="TEMP" fileName="/em/logs/draft_server/draft_server1.log">
+            <PatternLayout pattern="%d %-5p [%t] %c{1} (%F:%L) - %m%n"/>
+        </File> -->
+        <!-- <Async name="ASYNC">
+            <AppenderRef ref="TEMP"/>
+            <AppenderRef ref="CONSOLE"/>
+        </Async> -->
+        
+        <RollingFile name="RollingFile" fileName="/em/logs/draft_server/draft_server_info.log"
+                     filePattern="/em/logs/draft_server/$${date:yyyyMM}/draft_server_info-%d{yyyyMMdd}-%i.log.gz">
+            <PatternLayout pattern="%d %-5p [%t] %r (%F:%L) - %m%n"/>
+            <Policies>  
+		        <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+		        <SizeBasedTriggeringPolicy size="1000M" />
+		    </Policies>
+        </RollingFile>
+        
+       <RollingFile name="ServerError" fileName="/em/logs/draft_server/draft_server_error.log"
+       					filePattern="/em/logs/draft_server/draft_server_error_%d{yyyy-MM-dd}_%i.log.gz">
+        <PatternLayout pattern="%d %-5p [%t] (%F:%L) - %m%n" />
+            <Policies>  
+		        <TimeBasedTriggeringPolicy modulate="true" interval="1"/>  
+		    </Policies>
+        <Filters>
+        	<ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Filters>
+    </RollingFile>
+    
+
+        
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="CONSOLE"/>
+            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="ServerError"/>
+        </Root>
+        
+        <!-- <AsyncLogger name="AsyncLogger" level="trace" includeLocation="true">  
+	        <appender-ref ref="CONSOLE" /> 
+	    </AsyncLogger>  
+
+	    <asyncRoot level="trace" includeLocation="true">  
+	        <appender-ref ref="CONSOLE" />  
+	    </asyncRoot> -->
+
+    </Loggers>
+</Configuration>

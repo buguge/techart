@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit" xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.0.xsd
+http://www.springframework.org/schema/rabbit
+http://www.springframework.org/schema/rabbit/spring-rabbit-1.6.xsd">
+
+    <context:annotation-config/>
+    <!-- ########################################################################### -->
+    <!-- ############################## 汇票系统mq配置 ############################## -->
+    <!-- ########################################################################### -->
+    <!-- 连接服务配置 -->
+    <rabbit:connection-factory
+            id="huipiaoConsumerConnection"
+            addresses="${huipiao.mq.ip}"
+            username="${huipiao.mq.username}"
+            password="${huipiao.mq.password}"
+            virtual-host="/"
+    />
+
+    <rabbit:admin connection-factory="huipiaoConsumerConnection"/>
+
+
+    <bean id="consumer1" class="fanout.OrderApprovalConsumer"/>
+    <bean id="consumer2" class="fanout.OrderNotifyConsumer"/>
+
+    <!-- Queue statement-->
+    <rabbit:queue id="queue1" name="order.approval"/>
+    <rabbit:queue id="queue2" name="order.notify"/>
+
+    <!--退汇消息队列监听-->
+    <rabbit:listener-container connection-factory="huipiaoConsumerConnection" acknowledge="auto"
+                               max-concurrency="5"
+                               concurrency="2"
+                               prefetch="5">
+        <rabbit:listener ref="consumer1" queues="queue1"/>
+        <rabbit:listener ref="consumer2" queues="queue2"/>
+    </rabbit:listener-container>
+
+</beans>

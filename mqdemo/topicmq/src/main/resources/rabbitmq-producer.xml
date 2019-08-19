@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit" xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.0.xsd 
+http://www.springframework.org/schema/context 
+http://www.springframework.org/schema/context/spring-context-4.0.xsd
+http://www.springframework.org/schema/rabbit 
+http://www.springframework.org/schema/rabbit/spring-rabbit-1.6.xsd">
+
+    <context:annotation-config/>
+
+    <!-- spring amqp默认的是jackson 的一个插件,目的将生产者生产的数据转换为json存入消息队列 -->
+
+    <bean id="mqMessageConverter"
+          class="org.springframework.amqp.support.converter.SimpleMessageConverter">
+    </bean>
+
+    <bean id="publisherConfirmsReturns" class="PublisherConfirmsReturns"></bean>
+    <bean id="orderMsgProducer" class="OrderMsgProducer"></bean>
+
+
+    <!-- ########################################################################### -->
+    <!-- ############################## 汇票系统mq配置 ############################## -->
+    <!-- ########################################################################### -->
+    <!-- 连接服务配置 -->
+    <rabbit:connection-factory
+            id="huipiaoConnection"
+            addresses="${huipiao.mq.ip}"
+            username="${huipiao.mq.username}"
+            password="${huipiao.mq.password}"
+            channel-cache-size="${mq.cache.size}"
+            publisher-confirms="${mq.publisher.confirms}"
+            publisher-returns="${mq.publisher.returns}"
+            virtual-host="/"
+    />
+
+    <rabbit:admin connection-factory="huipiaoConnection"/>
+
+    <!--======================== 消息提醒 队列配置 start =========================-->
+    <!-- Queue statement-->
+    <rabbit:queue id="queue1" name="order.approval"
+                  durable="true" auto-delete="true" exclusive="false"/>
+    <rabbit:queue id="queue2" name="order.notify"
+                  durable="true" auto-delete="true" exclusive="false"/>
+    <!-- exchange Queue binging key 绑定 -->
+    <rabbit:topic-exchange id="x1" name="order.topic.exchange"
+                           durable="true" auto-delete="true">
+        <rabbit:bindings>
+            <rabbit:binding queue="queue1" pattern="approval.#"/>
+            <rabbit:binding pattern="notify.#" queue="queue2"/><!-- exchange="order.ex"-->
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+
+    <!-- Queue litener -->
+    <rabbit:template
+            id="orderMQTemplate"
+            exchange="order.topic.exchange"
+            connection-factory="huipiaoConnection"
+            message-converter="mqMessageConverter"
+            mandatory="true"
+            confirm-callback="publisherConfirmsReturns"
+            return-callback="publisherConfirmsReturns"
+    />
+
+</beans>
