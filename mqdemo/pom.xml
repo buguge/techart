@@ -15,7 +15,7 @@
 
 
     <properties>
-        <springframework.version>4.2.7.RELEASE</springframework.version>
+        <springframework.version>5.2.7.RELEASE</springframework.version>
         <spring-rabbit.version>1.6.1.RELEASE</spring-rabbit.version>
         <junit.version>4.12</junit.version>
     </properties>
